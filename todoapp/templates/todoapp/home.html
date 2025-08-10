@@ -1,67 +1,258 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>To-Do App</title>
-    <link rel="stylesheet" href="{% static 'myapp/style.css' %}">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 50px;
-            background-color: #f4f4f4;
-        }
-        h1 {
-            color: #333;
-        }
-        form {
-            margin-bottom: 20px;
-        }
-        input[type="text"] {
-            padding: 10px;
-            width: 300px;
-            border: 1px solid #ccc;
-        }
-        input[type="submit"] {
-            padding: 10px 20px;
-            background-color: #5cb85c;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        li {
-            background-color: white;
-            padding: 10px;
-            margin-bottom: 5px;
-            border-radius: 4px;
-        }
-        .completed {
-            text-decoration: line-through;
-            color: gray;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aastha's To-Do App</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        margin: 0;
+    }
+    .todo-container {
+        background: white;
+        padding: 25px;
+        width: 450px;
+        max-width: 95vw;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        animation: fadeIn 0.5s ease-in-out;
+        margin-top: 50px;
+    }
+    h1 {
+        text-align: center;
+        margin-bottom: 5px;
+        color: #4e54c8;
+        font-size: 26px;
+    }
+    p {
+        text-align: center;
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 15px;
+    }
+    .top-controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    .input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    input[type="text"], select {
+        padding: 8px 10px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        outline: none;
+        transition: border 0.3s;
+        font-size: 14px;
+    }
+    input[type="text"]:focus, select:focus {
+        border-color: #4e54c8;
+    }
+    #todoInput { flex: 1; }
+    button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: transform 0.2s ease, background 0.3s;
+        white-space: nowrap;
+    }
+    button:hover {
+        transform: scale(1.05);
+    }
+    .add-btn { background: linear-gradient(45deg, #11998e, #38ef7d); color: white;}
+    .edit-btn { background: #ffb347; color: white;}
+    .delete-btn { background: #ff4b5c; color: white;}
+    ul {
+        list-style: none;
+        padding: 0;
+        margin-top: 10px;
+        max-height: 300px; /* Scroll effect added */
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #4e54c8 #f1f1f1;
+    }
+    ul::-webkit-scrollbar {
+        width: 6px;
+    }
+    ul::-webkit-scrollbar-thumb {
+        background-color: #4e54c8;
+        border-radius: 3px;
+    }
+    li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f9f9f9;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+        animation: slideIn 0.3s ease-in-out;
+        gap: 16px;
+    }
+    .task-left {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        flex: 1;
+        gap: 10px;
+    }
+    .task-text {
+        font-size: 15px;
+        color: #333;
+        max-width: 200px;
+        word-break: break-word;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .done {
+        text-decoration: line-through;
+        color: #888;
+        opacity: 0.7;
+    }
+    .button-group {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+</style>
 </head>
 <body>
-    <h1>📝 To-Do List</h1>
+<div class="todo-container">
+    <h1>Welcome to Aastha's TODO</h1>
+    <p>Stay organized & productive ✨</p>
 
-    <form method="POST">
-        {% csrf_token %}
-        <input type="text" name="task" placeholder="Enter a new task" required>
-        <input type="submit" value="Add Task">
-    </form>
+    <!-- Search & Sort Controls -->
+    <div class="top-controls">
+        <input type="text" id="searchInput" placeholder="Search task..." oninput="renderTodos()">
+        <select id="sortSelect" onchange="renderTodos()">
+            <option value="default">Sort: Default</option>
+            <option value="alpha">Sort: A-Z</option>
+            <option value="done">Sort: Completed Last</option>
+        </select>
+    </div>
 
-    <ul>
-        {% for todo in todos %}
-            <li class="{% if todo.completed %}completed{% endif %}">
-                {{ todo.task }}
-            </li>
-        {% empty %}
-            <li>No tasks yet!</li>
-        {% endfor %}
-    </ul>
+    <!-- Add Task -->
+    <div class="input-group">
+        <input type="text" id="todoInput" placeholder="Enter a task...">
+        <button class="add-btn" onclick="addTodo()">Add</button>
+    </div>
+
+    <ul id="todoList"></ul>
+</div>
+
+<script>
+    let todos = [];
+
+    function renderTodos() {
+        const list = document.getElementById("todoList");
+        const searchValue = document.getElementById("searchInput").value.toLowerCase();
+        const sortOption = document.getElementById("sortSelect").value;
+
+        list.innerHTML = "";
+        let filteredTodos = todos.filter(todo => todo.text.toLowerCase().includes(searchValue));
+
+        if (sortOption === "alpha") {
+            filteredTodos.sort((a, b) => a.text.localeCompare(b.text));
+        } else if (sortOption === "done") {
+            filteredTodos.sort((a, b) => a.done - b.done); // active first, done last
+        }
+
+        filteredTodos.forEach((todo, index) => {
+            const li = document.createElement("li");
+
+            const leftDiv = document.createElement("div");
+            leftDiv.classList.add("task-left");
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = todo.done;
+            checkbox.onchange = () => toggleDone(index);
+
+            const span = document.createElement("span");
+            span.className = "task-text" + (todo.done ? " done" : "");
+            span.textContent = todo.text;
+
+            leftDiv.appendChild(checkbox);
+            leftDiv.appendChild(span);
+
+            if (todo.doneTime && todo.done) {
+                const doneInfo = document.createElement("span");
+                doneInfo.textContent = `✔ ${todo.doneTime}`;
+                doneInfo.style.fontSize = "11px";
+                doneInfo.style.color = "#4e54c8";
+                doneInfo.style.opacity = "0.8";
+                leftDiv.appendChild(doneInfo);
+            }
+
+            const btnGroup = document.createElement("div");
+            btnGroup.className = "button-group";
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "Edit";
+            editBtn.classList.add("edit-btn");
+            editBtn.onclick = () => editTodo(index);
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Delete";
+            deleteBtn.classList.add("delete-btn");
+            deleteBtn.onclick = () => deleteTodo(index);
+
+            btnGroup.appendChild(editBtn);
+            btnGroup.appendChild(deleteBtn);
+
+            li.appendChild(leftDiv);
+            li.appendChild(btnGroup);
+            list.appendChild(li);
+        });
+    }
+
+    function addTodo() {
+        const input = document.getElementById("todoInput");
+        const value = input.value.trim();
+        if (value) {
+            todos.push({ text: value, done: false, doneTime: null });
+            input.value = "";
+            renderTodos();
+        }
+    }
+
+    function editTodo(index) {
+        const newTask = prompt("Edit your task:", todos[index].text);
+        if (newTask !== null && newTask.trim() !== "") {
+            todos[index].text = newTask.trim();
+            renderTodos();
+        }
+    }
+
+    function deleteTodo(index) {
+        todos.splice(index, 1);
+        renderTodos();
+    }
+
+    function toggleDone(index) {
+        todos[index].done = !todos[index].done;
+        todos[index].doneTime = todos[index].done ? new Date().toLocaleString() : null;
+        renderTodos();
+    }
+</script>
 </body>
 </html>
