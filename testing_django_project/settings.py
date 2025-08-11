@@ -119,7 +119,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
-
+STATIC_ROOT = '/var/www/project/static/'
+#only tells Django what URL path will be used to access static files in the browser.
+#For collectstatic to work in production, you also need STATIC_ROOT, which tells Django where to copy all static files on your server’s filesystem
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
